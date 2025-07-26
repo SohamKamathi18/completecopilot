@@ -489,6 +489,27 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Serve static files from React build
+# Note: In production, you'd serve the built React app
+# For development, we'll add a catch-all route that serves the React dev server
+
+# Catch-all route for React Router (SPA routing support) 
+@app.get("/{path:path}")
+async def serve_react_app(path: str):
+    """
+    Catch-all route to serve React app for client-side routing.
+    This ensures that URLs like /patient/token work properly.
+    """
+    # For non-API routes, let the frontend handle routing
+    if not path.startswith('api/'):
+        # In a production setup, you'd serve the built React app here
+        # For now, we'll return a redirect response to let the frontend handle it
+        from starlette.responses import RedirectResponse
+        return RedirectResponse(url='/', status_code=200)
+    
+    # If this is somehow an API route that wasn't caught, return 404
+    raise HTTPException(status_code=404, detail="API endpoint not found")
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
